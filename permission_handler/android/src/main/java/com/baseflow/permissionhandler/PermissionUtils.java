@@ -61,6 +61,8 @@ public class PermissionUtils {
                 return PermissionConstants.PERMISSION_GROUP_ACCESS_MEDIA_LOCATION;
             case Manifest.permission.ACTIVITY_RECOGNITION:
                 return PermissionConstants.PERMISSION_GROUP_ACTIVITY_RECOGNITION;
+            case Manifest.permission.ACCESS_NOTIFICATION_POLICY:
+                return PermissionConstants.PERMISSION_GROUP_ACCESS_NOTIFICATION_POLICY;
             default:
                 return PermissionConstants.PERMISSION_GROUP_UNKNOWN;
         }
@@ -107,7 +109,6 @@ public class PermissionUtils {
                 if (hasPermissionInManifest(context, permissionNames, Manifest.permission.ACCESS_FINE_LOCATION))
                     permissionNames.add(Manifest.permission.ACCESS_FINE_LOCATION);
                 break;
-
 
             case PermissionConstants.PERMISSION_GROUP_SPEECH:
             case PermissionConstants.PERMISSION_GROUP_MICROPHONE:
@@ -188,6 +189,11 @@ public class PermissionUtils {
             case PermissionConstants.PERMISSION_GROUP_ACTIVITY_RECOGNITION:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && hasPermissionInManifest(context, permissionNames, Manifest.permission.ACTIVITY_RECOGNITION))
                     permissionNames.add(Manifest.permission.ACTIVITY_RECOGNITION);
+                break;
+
+            case PermissionConstants.PERMISSION_GROUP_ACCESS_NOTIFICATION_POLICY:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && hasPermissionInManifest(context, permissionNames, Manifest.permission.ACCESS_NOTIFICATION_POLICY))
+                    permissionNames.add(Manifest.permission.ACCESS_NOTIFICATION_POLICY);
                 break;
 
             case PermissionConstants.PERMISSION_GROUP_NOTIFICATION:

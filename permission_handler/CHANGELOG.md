@@ -1,3 +1,7 @@
+# 5.0.2
+
+* Android: Support ACCESS_NOTIFICATION_POLICY permission for API 23 and higher;
+
 # 5.0.1
 
 * Update `permission_handler_platform_interface 2.0.1`

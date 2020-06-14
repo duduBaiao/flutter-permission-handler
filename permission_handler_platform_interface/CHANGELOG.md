@@ -1,3 +1,7 @@
+## 2.0.2
+
+* Add accessNotificationPolicy permission
+
 ## 2.0.1
 
 * Update `platform_interface 1.0.2`

@@ -97,6 +97,11 @@ class Permission {
   /// The unknown only used for return type, never requested
   static const unknown = Permission._(19);
 
+  /// When running on Android M and above: Access Notification Policy
+  /// When running on Android < M: Nothing
+  /// iOS: Nothing
+  static const accessNotificationPolicy = Permission._(20);
+
   /// Returns a list of all possible [PermissionGroup] values.
   static const List<Permission> values = <Permission>[
     calendar,
@@ -119,6 +124,7 @@ class Permission {
     accessMediaLocation,
     activityRecognition,
     unknown,
+    accessNotificationPolicy,
   ];
 
   static const List<String> _names = <String>[
@@ -142,6 +148,7 @@ class Permission {
     'access_media_location',
     'activity_recognition',
     'unknown',
+    'access_notification_policy',
   ];
 
   @override

@@ -1,6 +1,7 @@
 package com.baseflow.permissionhandler;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,6 +11,7 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -127,6 +129,27 @@ final class PermissionManager {
                 intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
                 intent.setData(Uri.parse("package:" + packageName));
                 activity.startActivityForResult(intent, PermissionConstants.PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS);
+
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && permission == PermissionConstants.PERMISSION_GROUP_ACCESS_NOTIFICATION_POLICY) {
+                activityRegistry.addListener(
+                    new ActivityResultListener(successCallback)
+                );
+
+                String packageName = activity.getPackageName();
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+                intent.setData(Uri.parse("package:" + packageName));
+
+                if (intent.resolveActivity(activity.getPackageManager()) != null) {
+                    activity.startActivityForResult(intent, PermissionConstants.PERMISSION_CODE_ACCESS_NOTIFICATION_POLICY);
+                }
+                else {
+                    errorCallback.onError(
+                            "PermissionHandler.PermissionManager",
+                            "Unable to resolve the intent activity.");
+                    return;
+                }
+
             } else {
                 permissionsToRequest.addAll(names);
             }
@@ -166,6 +189,10 @@ final class PermissionManager {
 
         if (permission == PermissionConstants.PERMISSION_GROUP_NOTIFICATION) {
             return checkNotificationPermissionStatus(context);
+        } else if (permission == PermissionConstants.PERMISSION_GROUP_ACCESS_NOTIFICATION_POLICY) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                return checkAccessNotificationPolicyPermissionStatus(context);
+            }
         }
 
         final List<String> names = PermissionUtils.getManifestNames(context, permission);
@@ -262,6 +289,16 @@ final class PermissionManager {
         return PermissionConstants.PERMISSION_STATUS_DENIED;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private int checkAccessNotificationPolicyPermissionStatus(Context context) {
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        boolean isGranted = manager.isNotificationPolicyAccessGranted();
+        if (isGranted) {
+            return PermissionConstants.PERMISSION_STATUS_GRANTED;
+        }
+        return PermissionConstants.PERMISSION_STATUS_DENIED;
+    }
+
     @VisibleForTesting
     static final class ActivityResultListener
         implements PluginRegistry.ActivityResultListener {
@@ -281,7 +318,9 @@ final class PermissionManager {
 
         @Override
         public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-            if(alreadyCalled || requestCode != PermissionConstants.PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS) {
+            if (alreadyCalled ||
+                !((requestCode == PermissionConstants.PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS) ||
+                (requestCode == PermissionConstants.PERMISSION_CODE_ACCESS_NOTIFICATION_POLICY))) {
                 return false;
             }
 
@@ -291,7 +330,12 @@ final class PermissionManager {
                     : PermissionConstants.PERMISSION_STATUS_DENIED;
 
             HashMap<Integer, Integer> results = new HashMap<>();
-            results.put(PermissionConstants.PERMISSION_GROUP_IGNORE_BATTERY_OPTIMIZATIONS, status);
+            if (requestCode == PermissionConstants.PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS) {
+                results.put(PermissionConstants.PERMISSION_GROUP_IGNORE_BATTERY_OPTIMIZATIONS, status);
+            }
+            else {
+                results.put(PermissionConstants.PERMISSION_GROUP_ACCESS_NOTIFICATION_POLICY, status);
+            }
             callback.onSuccess(results);
             return true;
         }

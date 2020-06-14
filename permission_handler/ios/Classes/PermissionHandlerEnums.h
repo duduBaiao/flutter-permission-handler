@@ -101,6 +101,7 @@ typedef NS_ENUM(int, PermissionGroup) {
     PermissionGroupNotification,
     PermissionGroupAccessMediaLocation,
     PermissionGroupUnknown,
+    PermissionGroupAccessNotificationPolicy,
 };
 
 typedef NS_ENUM(int, PermissionStatus) {

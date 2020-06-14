@@ -9,6 +9,7 @@ final class PermissionConstants {
     static final String LOG_TAG = "permissions_handler";
     static final int PERMISSION_CODE = 24;
     static final int PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS = 5672353;
+    static final int PERMISSION_CODE_ACCESS_NOTIFICATION_POLICY = 5672354;
 
     //PERMISSION_GROUP
     static final int PERMISSION_GROUP_CALENDAR = 0;
@@ -31,6 +32,7 @@ final class PermissionConstants {
     static final int PERMISSION_GROUP_ACCESS_MEDIA_LOCATION = 17;
     static final int PERMISSION_GROUP_ACTIVITY_RECOGNITION = 18;
     static final int PERMISSION_GROUP_UNKNOWN = 19;
+    static final int PERMISSION_GROUP_ACCESS_NOTIFICATION_POLICY = 20;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
@@ -54,6 +56,7 @@ final class PermissionConstants {
             PERMISSION_GROUP_ACCESS_MEDIA_LOCATION,
             PERMISSION_GROUP_ACTIVITY_RECOGNITION,
             PERMISSION_GROUP_UNKNOWN,
+            PERMISSION_GROUP_ACCESS_NOTIFICATION_POLICY,
     })
     @interface PermissionGroup {
     }
