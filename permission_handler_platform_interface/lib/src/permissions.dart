@@ -10,6 +10,7 @@ class PermissionWithService extends Permission {
 /// Defines the permissions which can be checked and requested.
 class Permission {
   const Permission._(this.value);
+
   factory Permission.byValue(int value) => values[value];
 
   /// Integer representation of the [Permission].
@@ -146,9 +147,9 @@ class Permission {
     'ignoreBatteryOptimizations',
     'notification',
     'access_media_location',
-    'activity_recognition',
+    'activityRecognition',
     'unknown',
-    'access_notification_policy',
+    'accessNotificationPolicy',
   ];
 
   @override

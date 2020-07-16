@@ -112,11 +112,16 @@ final class PermissionManager {
             // check to see if we can find manifest names
             // if we can't add as unknown and continue
             if (names == null || names.isEmpty()) {
-                if (!requestResults.containsKey(permission)) {
-                    requestResults.put(permission, PermissionConstants.PERMISSION_STATUS_NOT_DETERMINED);
-                }
+                if (!(permissionStatus == PermissionConstants.PERMISSION_STATUS_DENIED &&
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
+                        permission == PermissionConstants.PERMISSION_GROUP_NOTIFICATION)) {
 
-                continue;
+                    if (!requestResults.containsKey(permission)) {
+                        requestResults.put(permission, PermissionConstants.PERMISSION_STATUS_NOT_DETERMINED);
+                    }
+
+                    continue;
+                }
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && permission == PermissionConstants.PERMISSION_GROUP_IGNORE_BATTERY_OPTIMIZATIONS) {
@@ -130,26 +135,28 @@ final class PermissionManager {
                 intent.setData(Uri.parse("package:" + packageName));
                 activity.startActivityForResult(intent, PermissionConstants.PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS);
 
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && permission == PermissionConstants.PERMISSION_GROUP_NOTIFICATION) {
+                activityRegistry.addListener(
+                    new ActivityResultListener(successCallback)
+                );
+
+                Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+
+                // for Android 5-7
+                intent.putExtra("app_package", activity.getPackageName());
+                intent.putExtra("app_uid", activity.getApplicationInfo().uid);
+
+                // for Android 8 and above
+                intent.putExtra("android.provider.extra.APP_PACKAGE", activity.getPackageName());
+
+                activity.startActivityForResult(intent, PermissionConstants.PERMISSION_CODE_NOTIFICATION);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && permission == PermissionConstants.PERMISSION_GROUP_ACCESS_NOTIFICATION_POLICY) {
                 activityRegistry.addListener(
                     new ActivityResultListener(successCallback)
                 );
 
-                String packageName = activity.getPackageName();
-                Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
-                intent.setData(Uri.parse("package:" + packageName));
-
-                if (intent.resolveActivity(activity.getPackageManager()) != null) {
-                    activity.startActivityForResult(intent, PermissionConstants.PERMISSION_CODE_ACCESS_NOTIFICATION_POLICY);
-                }
-                else {
-                    errorCallback.onError(
-                            "PermissionHandler.PermissionManager",
-                            "Unable to resolve the intent activity.");
-                    return;
-                }
-
+                Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+                activity.startActivityForResult(intent, PermissionConstants.PERMISSION_CODE_ACCESS_NOTIFICATION_POLICY);
             } else {
                 permissionsToRequest.addAll(names);
             }
@@ -320,7 +327,8 @@ final class PermissionManager {
         public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
             if (alreadyCalled ||
                 !((requestCode == PermissionConstants.PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS) ||
-                (requestCode == PermissionConstants.PERMISSION_CODE_ACCESS_NOTIFICATION_POLICY))) {
+                (requestCode == PermissionConstants.PERMISSION_CODE_ACCESS_NOTIFICATION_POLICY) ||
+                (requestCode == PermissionConstants.PERMISSION_CODE_NOTIFICATION))) {
                 return false;
             }
 
@@ -330,12 +338,7 @@ final class PermissionManager {
                     : PermissionConstants.PERMISSION_STATUS_DENIED;
 
             HashMap<Integer, Integer> results = new HashMap<>();
-            if (requestCode == PermissionConstants.PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS) {
-                results.put(PermissionConstants.PERMISSION_GROUP_IGNORE_BATTERY_OPTIMIZATIONS, status);
-            }
-            else {
-                results.put(PermissionConstants.PERMISSION_GROUP_ACCESS_NOTIFICATION_POLICY, status);
-            }
+            results.put(requestCode, status);
             callback.onSuccess(results);
             return true;
         }

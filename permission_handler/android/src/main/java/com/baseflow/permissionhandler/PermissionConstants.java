@@ -10,6 +10,7 @@ final class PermissionConstants {
     static final int PERMISSION_CODE = 24;
     static final int PERMISSION_CODE_IGNORE_BATTERY_OPTIMIZATIONS = 5672353;
     static final int PERMISSION_CODE_ACCESS_NOTIFICATION_POLICY = 5672354;
+    static final int PERMISSION_CODE_NOTIFICATION = 5672355;
 
     //PERMISSION_GROUP
     static final int PERMISSION_GROUP_CALENDAR = 0;
